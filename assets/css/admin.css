@@ -1,0 +1,29 @@
+.pm_wrapper{
+    display: block;
+    margin-right: 15px;
+}
+
+.pm_block{
+    display: block;
+    padding-bottom: 10px;
+    /*height: 40px;*/
+}
+
+.errorMessage{
+    color: red;
+    border-left: 2px solid red;
+    font-weight: bold;
+    padding: 5px 10px;
+}
+.errorMessage:empty { display: none }
+
+.successMessage{
+    color: #009933;
+    border-left: 2px solid #009933;
+    font-weight: bold;
+    padding: 5px 10px;
+}
+.successMessage:empty { display: none }
+.pm_selectOption{
+    margin-right: 10px;
+}

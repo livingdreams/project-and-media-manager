@@ -1,0 +1,55 @@
+.error-message{
+    color: red;
+    border-left: 2px solid red;
+    font-weight: bold;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+.error-message:empty { display: none }
+.success-message{
+    color: #009933;
+    border-left: 2px solid #009933;
+    font-weight: bold;
+    padding: 5px 10px;
+}
+.success-message:empty { display: none }
+
+/*Project single page*/
+.project-template .et_pb_gallery_grid .et_pb_gallery_item {
+    margin-bottom: 0px!important;
+    padding: 20px;
+}
+.sub-para{
+    margin-top: 25px;    
+}
+.milestone{
+    padding: 25px 0px 25px 10px;
+    border-top: 1px solid;
+
+}
+
+.mile_gallery{ width:100%!important; }
+
+#user-log{ margin-top: 25px; }
+
+#user-log input[type=text], input[type=password]{
+    width: 100%;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc !important;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.custom-video{ width:44.25%!important; }
+
+.dashboard-para{ 
+    margin-bottom: 40px; 
+    background-color: aliceblue;
+    padding: 10px;
+
+}
+
+.client-name { 
+     color: #000;
+}
