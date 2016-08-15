@@ -61,7 +61,7 @@ if (!function_exists('pmm_submenu_pages')) {
 
     function pmm_submenu_pages() {
         //add sub menu pages
-        add_submenu_page('pmm-control-panel', current_user_can( 'manage_options' ) ? __('General', 'wp-pmm') : '', current_user_can( 'manage_options' ) ? __('General', 'wp-pmm') : '', 'project_manager', 'pmm-control-panel', IncludePhpFile); //dissabled main
+        add_submenu_page('pmm-control-panel', current_user_can('manage_options') ? __('General', 'wp-pmm') : '', current_user_can('manage_options') ? __('General', 'wp-pmm') : '', 'project_manager', 'pmm-control-panel', IncludePhpFile); //dissabled main
         add_submenu_page('pmm-control-panel', __('Area Manager', 'wp-pmm'), __('Area Manager', 'wp-pmm'), 'administrator', 'area-manager', IncludePhpFile);
         add_submenu_page('pmm-control-panel', __('Franchises', 'wp-pmm'), __('Franchises', 'wp-pmm'), 'administrator', 'franchises', IncludePhpFile);
         add_submenu_page('pmm-control-panel', __('Clients', 'wp-pmm'), __('Clients', 'wp-pmm'), 'project_manager', 'clients', IncludePhpFile);
@@ -97,7 +97,7 @@ if (!function_exists('pmm_ajax_callback')) {
         if (isset($_REQUEST['method'])) {
 
             switch ($_REQUEST['method']) {
-                case 'general':                    
+                case 'general':
                     parse_str($_REQUEST['data'], $data);
                     $pmm_settings = get_option('pmm_settings');
                     if ($pmm_settings) {
@@ -141,25 +141,12 @@ if (!function_exists('pmm_ajax_callback')) {
                     $password = $client->password;
                     if ($client->update()) {
                         $client->get_row('id', $client->id);
-						ob_start();
-                        //$message = include 'emailTemplate.php';
-                        include('views/passwordResetTemplate.php');   // execute the file
-                        $message = ob_get_contents();
-                        /*$message = '
-
-            Hello ' . ucfirst($client->get_fullname()) . ',
-
-            Your new password is ' . $password . '
-
-            Thank you.
-            
-            Global Enterprise Disaster Restoration
-            1800.725.7045                       
-            ';*/
-                        //$client->get_row('id', $client->id);
-                        //$message = 'Hello ' . $client->get_fullname() . ',' . $message;
+                        ob_start();
+                        include('email-templates/reset-password.php');
+                        $message = ob_get_clean();
+                        //send email
                         send_email($client->email, 'Your New Password', $message);
-						ob_end_clean();
+
                         $data['status'] = true;
                         $data['message'] = 'reload';
                     } else {
@@ -204,81 +191,23 @@ if (!function_exists('pmm_ajax_callback')) {
                             if ($client->send_details == 1) {
                                 $commercial_link = get_home_url() . "/commercial/";
                                 $video_link = get_home_url() . '#video_id';
+                                $subjectAdminNotification = 'User Access of ' . $client->get_fullname();
                                 ob_start();
-                                //$message = include 'emailTemplate.php';
-                                include('views/emailTemplate.php');   // execute the file
-                                $message = ob_get_contents();    // get the contents from the buffer
-                              
-                                /*$message= '
-            Hello ' . ucfirst($client->get_fullname()) . ',
-            <br/><br/>
-            Thank you for giving us the opportunity to serve you.<br/>
-            To track the progress of the work please visit the Client Login area at: ' . get_home_url() . '/client-dashboard/' . '
-             
-            <p>Use the below credentials to login:<p>
-             
-                Username:' . $client->username . ' <br/>
-                Password:' . $client->password . ' <br/>
-                
-            <br/>You can also <a href="https://itunes.apple.com/us/app/disaster-restoration/id649725393?mt=8" target="_blank">download our new Mobile App</a> to your phone and get access to tracking the progress at all times, using the same credentials provided. 
-            App available on IOS devices only for now. Android version will be available soon.
-            <br/>Go to the App Store and <a href="https://itunes.apple.com/us/app/disaster-restoration/id649725393?mt=8"> download the Free Disaster Restoration App. </a>
-
-            <p>To learn how to use the App go view the video tutorial <a href="' . $video_link . '"> here  <a> </p>
-
-           Few important features in the Client Area:
-                <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &#9679; My Project Status: Section that keeps you informed and clearly indicates how far we’ve progressed with your restoration.
-                <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &#9679; Project Documents: Quickly access and download documents and related to your project. Including your Contract, Work Authorization, Customer Selection Form and other miscellaneous documents.
-                <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &#9679; More Details :You’ll find more details, including dated notes and additional information about your project.
-                <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  - Gallery: Easily browse high quality photos from the job site an attractive pop-up photo gallery
-                <br/>  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Videos: Easily browse videos related to each milestone.
-
-            <p>If you have any questions please e-mail us at info@globalenterprisesouthflorida.com or call us on 1800.725.7045.</p>
-
-             Also, please fill out our <a href="' . $commercial_link . '"> “RED ALERT PROGRAM”  </a> form ,
-            <br/> <strong>Red Alert Program – Residential or Commercial </strong>
-            <br/>By joining to our red alert program for your home, you minimize further damages by having an immediate plan of action. Knowing what to do and what to expect in advance is the key to timely mitigation and can help minimize how water and fire or even storm damage can affect your home.
-            <br/><strong>Advantage of our red alert program:</strong>
-                <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.  It would take a little time to complete the form but it will save a lot of time if it’s ever needed.
-                <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2.  You will know who to rely on when disaster happens and not to think about “What to do now?”
-                <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3.  When disaster happens, our team will be there for you, we are well prepared to protect your property and mitigate your damages.
-                <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4.  Providing detailed information about your home or business will avoid questions which require immediate answers. This saves time and money. 
-
-            <br/><br/>
-            <br/> Global Enterprise Disaster Restoration
-            <br/> 1800.725.7045
-                        ';*/
+                                include('email-templates/welcome.php');
+                                $message = ob_get_clean();
                                 send_email($client->email, 'User Access', $message);
-								ob_end_clean();
-                            }
-                            
-                            else {
-
+                                $current_user = wp_get_current_user();
+                                send_email($current_user->user_email, $subjectAdminNotification, $message);
+                                ob_end_clean();
+                            } else {
                                 $subject = 'User Access of ' . $client->get_fullname();
+                                $subjectAdminNotification = 'User Access of ' . $client->get_fullname();
                                 ob_start();
-                                include('views/Notificationemail.php');   // execute the file
-                                $message = ob_get_contents();    // get the contents from the buffer
-                                /*$message = '
-            Hello ' . $client->get_fullname() . ',
-            
-            We are pleased to inform you that your preferred disaster restoration company: Global Enterprise has
-            successfully set-up your mobile app access. You can now view the photos and read actual progress
-            report of your property while the restoration process is being done.
-            
-            After you have downloaded the Disaster Restoration mobile app, log in to My Project with the user and 
-            password below:     
-            
-            Username:' . $client->username . '
-            Password:' . $client->password . '
-            
-            Feel free to contact us if you have any questions about the app or the project.
-            Thank you.
-            
-            Global Enterprise Disaster Restoration
-            1800.725.7045
-            ';*/
-                                send_email(get_option('admin_email'), $subject, $message);
-				ob_end_clean();
+                                include('email-templates/notify-admin.php');
+                                $message = ob_get_clean();
+                                $current_user = wp_get_current_user();
+                                send_email($current_user->user_email, $subjectAdminNotification, $message);
+                                ob_end_clean();
                             }
                             $data['status'] = true;
                             $data['message'] = __('Client has been registered successfully.', 'wp-pmm');
@@ -288,8 +217,7 @@ if (!function_exists('pmm_ajax_callback')) {
                         }
                     }
                     break;
-
-                //Add new client
+                //Update client
                 case 'update':
                     $client = new WP_Client();
                     $client->set_attributes($_REQUEST['data']);
@@ -319,6 +247,34 @@ add_action('wp_ajax_pmm_ajax_action', 'pmm_ajax_callback');
 add_action('wp_ajax_nopriv_pmm_ajax_action', 'pmm_ajax_callback');
 
 /**
+ * Send php mail message
+ * @param string $to
+ * @param string $subject
+ * @param string $message
+ * @return boolean
+ */
+function send_email($to, $subject, $message) {
+    //filter email content type
+    add_filter('wp_mail_content_type', 'set_html_content_type');
+
+    $headers = 'From: Global Enterprise South Florida <webmaster@globalenterprisesouthflorida.com>' . "\r\n" .
+            'Reply-To: noreply@globalenterprisesouthflorida.com' . "\r\n" .
+            'X-Mailer: PHP/' . phpversion();
+
+    if (wp_mail($to, $subject, $message, $headers)) {
+        remove_filter('wp_mail_content_type', 'set_html_content_type');
+        return true;
+    } else {
+        return false;
+    }
+}
+
+//set email content type
+function set_html_content_type() {
+    return 'text/html';
+}
+
+/**
  * Show custom user profile fields
  * @param  obj $user The user object.
  * @return void
@@ -338,7 +294,7 @@ function franchise_custom_profile_fields($user) {
             <hr>
             <table class="form-table">
                 <tr class="user-contact-wrap">
-                    <th><label for="contact_person"><?php _e('Contact Person') ?></label></th>
+                    <th><label for="contact_person"><?php _e('Contact') ?></label></th>
                     <td><input type="text" name="contact_person" id="contact_person" value="<?php echo esc_attr($user->contact_person) ?>" class="regular-text" /></td>
                 </tr>
                 <tr class="user-area-wrap">
@@ -352,12 +308,12 @@ function franchise_custom_profile_fields($user) {
                 </tr>
                 <tr class="user-description-wrap">
                     <th><label for="address"><?php _e('Address'); ?></label></th>
-                    <td><textarea name="address" id="address" rows="4" cols="30"><?php echo $user->address; ?></textarea>
+                    <td><textarea name="address" id="address" rows="4" cols="30"><?= $user->address; ?></textarea>
                         <p class="description"><?php _e('Your perment Address. This may be shown publicly.'); ?></p></td>
                 </tr>
                 <tr class="user-working-hour-wrap">
                     <th><label for="working_hours"><?php _e('Working hours') ?></label></th>
-                    <td><input type="text" name="working_hours" id="working_hours" value="<?php echo esc_attr($user->working_hours) ?>" class="regular-text" /></td>
+                    <td><textarea name="working_hours" id="working_hours" rows="3" cols="30"><?= $user->working_hours ?></textarea></td>
                 </tr>
                 <tr class="user-telephone-wrap">
                     <th><label for="telephone"><?php _e('Telephone') ?></label></th>
@@ -432,8 +388,8 @@ function franchise_custom_profile_save($user_id) {
 
     $post_id = wp_insert_post($post);
     update_user_meta($user_id, 'post_id', $post_id); //
-    update_post_meta($post_id, 'wpsl_address', $_POST['address']);
-    update_post_meta($post_id, 'wpsl_city', $_POST['area']);
+    update_post_meta($post_id, 'wpsl_address', $_POST['area']);
+    update_post_meta($post_id, 'wpsl_city', $_POST['address']);
     update_post_meta($post_id, 'wpsl_country', 'United States');
     update_post_meta($post_id, 'wpsl_phone', $_POST['telephone']);
     update_post_meta($post_id, 'wpsl_hours', $_POST['working_hours']);
@@ -446,31 +402,6 @@ add_action('personal_options_update', 'franchise_custom_profile_save');
 add_action('edit_user_profile_update', 'franchise_custom_profile_save');
 add_action('user_register', 'franchise_custom_profile_save');
 
-/**
- * Send php mail message
- * @param string $to
- * @param string $subject
- * @param string $message
- * @return boolean
- */
-function send_email($to, $subject, $message) {
-    add_filter('wp_mail_content_type', 'set_html_content_type');
-
-    $headers = 'From: Global Enterprise South Florida <webmaster@globalenterprisesouthflorida.com>' . "\r\n" .
-            'Reply-To: noreply@globalenterprisesouthflorida.com' . "\r\n" .
-            'X-Mailer: PHP/' . phpversion();
-
-    if (wp_mail($to, $subject, $message, $headers)) {
-        remove_filter('wp_mail_content_type', 'set_html_content_type');
-        return true;
-    } else {
-        return false;
-    }
-}
-
-function set_html_content_type() {
-    return 'text/html';
-}
 
 // Redefine user notification function
 if (!function_exists('wp_new_user_notification')) {
@@ -486,13 +417,6 @@ if (!function_exists('wp_new_user_notification')) {
         // The blogname option is escaped with esc_html on the way into the database in sanitize_option
         // we want to reverse this for the plain text arena of emails.
         $blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
-
-        $message = sprintf(__('New user registration on your site %s:'), $blogname) . "\r\n\r\n";
-        $message .= sprintf(__('Username: %s'), $user->user_login) . "\r\n\r\n";
-        $message .= sprintf(__('Email: %s'), $user->user_email) . "\r\n";
-
-        @wp_mail(get_option('admin_email'), sprintf(__('[%s] New User Registration'), $blogname), $message);
-
         // `$deprecated was pre-4.3 `$plaintext_pass`. An empty `$plaintext_pass` didn't sent a user notifcation.
         if ('admin' === $notify || ( empty($deprecated) && empty($notify) )) {
             return;
@@ -511,19 +435,13 @@ if (!function_exists('wp_new_user_notification')) {
         }
         $hashed = time() . ':' . $wp_hasher->HashPassword($key);
         $wpdb->update($wpdb->users, array('user_activation_key' => $hashed), array('user_login' => $user->user_login));
-
-        $message = __('Hi,') . "\r\n\r\n";
-        $message .= __('Below are the details for you to access the Global Enterprise South Florida Franchise Area.') . "\r\n\r\n";
-        $message .= sprintf(__('Username: %s'), $user->user_login) . "\r\n\r\n";
-        $message .= __('To set your password, visit the following address:') . "\r\n\r\n";
-        $message .= '<' . network_site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user->user_login), 'login') . ">\r\n\r\n";
-
-        $message .= wp_login_url() . "\r\n\r\n";
-        $message .= __('Thank you,') . "\r\n\r\n";
-        $message .= __('Global Enterprise Disaster Restoration') . "\r\n";
-        $message .= __('1800.725.7045') . "\r\n";
-
-        wp_mail($user->user_email, sprintf(__('[%s] Your username and password info'), $blogname), $message);
+        ob_start();
+        include('email-templates/welcome-Franchisee.php');   // execute the file
+        $message = ob_get_contents();
+        send_email($user->user_email, sprintf(__('[%s] Your username and password info'), $blogname), $message);
+        send_email(get_option('admin_email'), sprintf(__('[%s] Username and password info'), $blogname), $message);
+        ob_end_clean();
+        //wp_mail($user->user_email, sprintf(__('[%s] Your username and password info'), $blogname), $message);
     }
 
 }

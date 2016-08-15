@@ -18,8 +18,8 @@ if ($require == 'wp-api/location') {
         foreach ($loc->find_nearby_locations() as $location) {
             $franchisee_details[] = array(
                 'contact_person' => $location['store'],
-                'franchise_area' => $location['city'],
-                'address' => $location['address'],
+                'franchise_area' => $location['address'],
+                'address' => $location['city'],
                 'working_hours' => strip_tags(trim($location['hours'])),
                 'telephone' => $location['phone']);
         }
@@ -32,6 +32,7 @@ if ($require == 'wp-api/location') {
         die();
     }
 } else {
+    //Register devices
     if ($require == 'wp-api/RegisterDevices/apns.php') {
         ini_set('display_errors', 'on');
         //Load APNS class
@@ -51,7 +52,7 @@ if ($require == 'wp-api/location') {
     }
 
     /**
-     * 
+     * User and franchisee login
      */
     if (isset($_REQUEST['username']) && isset($_REQUEST['password'])) {
 
@@ -75,6 +76,7 @@ if ($require == 'wp-api/location') {
                 $data = array(
                     'id' => $client->id,
                     'firstname' => isset($_REQUEST['firstname']) ? $_REQUEST['firstname'] : $client->firstname,
+                    'lastname' => isset($_REQUEST['lastname']) ? $_REQUEST['lastname'] : $client->lastname,
                     'address' => isset($_REQUEST['address']) ? $_REQUEST['address'] : $client->address,
                     'email' => isset($_REQUEST['email']) ? $_REQUEST['address'] : $client->address,
                     'telno' => isset($_REQUEST['telno']) ? $_REQUEST['telno'] : $client->telno,
@@ -83,11 +85,24 @@ if ($require == 'wp-api/location') {
                 $client->set_attributes($data);
                 if ($client->update())
                     $result['AuthenticateResult'] = 1;
-            }/* else {
-              echo json_encode($result);
-              create_json($client);
-              die();
-              } */
+            }
+            //check for franchisee
+        }else if ($franchise = get_userdatabylogin($user['username'])) {
+            if (wp_check_password($user['password'], $franchise->user_pass, $franchise->ID)) {
+                $result['AuthenticateResult'] = 1;
+                if ($require == 'wp-api/getuserinfo.php') {
+                    $result['user_first'] = $franchise->first_name;
+                    $result['user_last'] = $franchise->last_name;
+                    $result['user_email'] = $franchise->user_email;
+                    $result['user_address'] = get_user_meta($user_id, 'area', true);
+                    $result['user_telno'] = get_user_meta($user_id, 'telephone', true);
+                    $result['user_mobileno'] = $result['user_telno'];
+                } else if ($require == 'wp-api/updateuser.php') {
+                    update_user_meta($franchise->ID, 'first_name', $_REQUEST['firstname']);
+                    update_user_meta($franchise->ID, 'address', $_REQUEST['address']);
+                    update_user_meta($franchise->ID, 'telephone', $_REQUEST['telno']);
+                }
+            }
         }
         echo json_encode($result);
     }
@@ -117,20 +132,25 @@ if ($require == 'wp-api/location') {
     die();
 }
 
-function create_json($user) {
+function create_json($username) {
     $pmm_options = get_option('pmm_settings');
     $client = new WP_Client();
-    $client->get_row('username', $user);
     $args = array(
         'posts_per_page' => -1,
         'offset' => 0,
         //'orderby' => 'menu_order, post_title', // post_date, rand
         //'order' => 'DESC',
-        'meta_key' => $client->is_admin ? '' : '_client_id',
-        'meta_value' => $client->is_admin ? '' : $client->id,
         'post_type' => 'client_project',
         'post_status' => 'publish',
     );
+    if ($client->get_row('username', $username)) {
+        if (!$client->is_admin) {
+            $args['meta_key'] = '_client_id';
+            $uid = $args['meta_value'] = $client->id;
+        }
+    } else if ($franchise = get_userdatabylogin($username)) {
+        $uid = $args['author'] = $franchise->ID;
+    }
     $loop = new WP_Query($args);
 
     foreach ($loop->posts as $k => $project):
@@ -185,7 +205,8 @@ function create_json($user) {
             'progress' => $progress,
             'images' => array_reverse($images),
             'doc-titles' => $doc_titles,
-            'doc-links' => $doc_links
+            'doc-links' => $doc_links,
+                //'author' => $project->post_author
         );
         //var_dump($project);
     endforeach;
@@ -195,8 +216,8 @@ function create_json($user) {
         'jsonproc' => '2.0',
         'total' => (string) $loop->post_count,
         'results' => array(array(
-                'userid' => (string) $client->id,
-                'username' => $client->username,
+                'userid' => (string) $uid,
+                'username' => $username,
                 'role' => '1',
                 'projects' => $projects
             ))

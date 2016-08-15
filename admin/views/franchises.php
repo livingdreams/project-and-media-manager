@@ -75,7 +75,7 @@ class PMM_Franchises extends baseModel {
     function column_id($item) {
         $actions = array(
             'edit' => sprintf('<a href="user-edit.php?user_id=%s">%s</a>', $item->id, __('Edit')),
-            //'delete' => sprintf('<a href="?page=%s&tab=%s&action=delete&id=%s&paged=%s">Delete</a>', $_REQUEST['page'], $_REQUEST['tab'], $item['id'], $_REQUEST['paged']),
+                //'delete' => sprintf('<a href="?page=%s&tab=%s&action=delete&id=%s&paged=%s">Delete</a>', $_REQUEST['page'], $_REQUEST['tab'], $item['id'], $_REQUEST['paged']),
         );
 
         return sprintf('%1$s %2$s', sprintf('<a class="row-title" href="user-edit.php?user_id=%s">%s</a>', $item->id, $item->display_name), $this->row_actions($actions));
@@ -83,41 +83,21 @@ class PMM_Franchises extends baseModel {
 
 }
 
-$fra = new PMM_Franchises();
+//display Franchises
+$franchises = new PMM_Franchises();
 //var_dump($fra);
 ?>
 <div class="wrap">
 
     <h1>Registered Franchises <a href="<?= bloginfo('url') ?>/wp-admin/user-new.php?role=franchisee" class="page-title-action">Add New</a></h1>
-
     <hr>
-
     <div class="pm_block">
         <div id="errorMessage"></div>
     </div>
-<?php //$user = new WP_User_Query(array('role' => 'franchisee'));  ?>
-    <!--    <ul class="subsubsub">
-            <li class="all"><a href="" class="current">All <span class="count">(<?= $user->total_users ?>)</span></a></li>        
-        </ul>-->
+
     <?php
-    $fra->prepare_items();
-    $fra->display();
+    $franchises->prepare_items();
+    $franchises->display();
     ?>
-    <!--    <table class="wp-list-table widefat fixed striped">
-            <thead>
-                <tr><th><span>Name</span></th><th>Email</th><th>Area</th><th>Address</th></tr>
-            </thead>
-            <tbody>
-    <?php
-    //User Loop
-    /* if (!empty($user->results)) {
-      foreach ($user->results as $user)
-      echo '<tr><td><a class="row-title" href="' . get_bloginfo('url') . '/wp-admin/user-edit.php?user_id=' . $user->id . '" >' . $user->display_name . '</a><br/><div class="row-actions"><span class="edit"><a href="' . get_bloginfo('url') . '/wp-admin/user-edit.php?user_id=' . $user->id . '" aria-label="Edit “' . $user->display_name . '”">Edit</a> </span></div></td><td>' . $user->user_email . '</td><td>' . $user->area . '</td><td>' . $user->address . '</td></tr>';
-      } else {
-      echo 'No users found.';
-      } */
-    ?>
-            </tbody>
-        </table>-->
-<?php ?>
+
 </div>
