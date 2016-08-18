@@ -68,8 +68,8 @@ if (!function_exists('pmm_submenu_pages')) {
         add_submenu_page('pmm-control-panel', __('Register Client', 'wp-pmm'), __('New Client', 'wp-pmm'), 'project_manager', 'client', IncludePhpFile);
         add_submenu_page('pmm-control-panel', __('Reset Password', 'wp-pmm'), __('Reset Password', 'wp-pmm'), 'project_manager', 'reset-password', IncludePhpFile);
         //remove wpsl_stores menu items
-        remove_submenu_page('edit.php?post_type=wpsl_stores', 'edit.php?post_type=wpsl_stores');
-        remove_submenu_page('edit.php?post_type=wpsl_stores', 'post-new.php?post_type=wpsl_stores');
+        //remove_submenu_page('edit.php?post_type=wpsl_stores', 'edit.php?post_type=wpsl_stores');
+        //remove_submenu_page('edit.php?post_type=wpsl_stores', 'post-new.php?post_type=wpsl_stores');
     }
 
 }
