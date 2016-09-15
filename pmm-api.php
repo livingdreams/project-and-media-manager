@@ -77,8 +77,8 @@ if ($require == 'wp-api/location') {
                     'id' => $client->id,
                     'firstname' => isset($_REQUEST['firstname']) ? $_REQUEST['firstname'] : $client->firstname,
                     'lastname' => isset($_REQUEST['lastname']) ? $_REQUEST['lastname'] : $client->lastname,
-                    'address' => isset($_REQUEST['address']) ? $_REQUEST['address'] : $client->address,
-                    'email' => isset($_REQUEST['email']) ? $_REQUEST['address'] : $client->address,
+                    'address' => isset($_REQUEST['address']) ? stripcslashes($_REQUEST['address']) : $client->address,
+                    'email' => isset($_REQUEST['email']) ? $_REQUEST['email'] : $client->email,
                     'telno' => isset($_REQUEST['telno']) ? $_REQUEST['telno'] : $client->telno,
                     'mobileno' => isset($_REQUEST['mobileno']) ? $_REQUEST['mobileno'] : $client->mobileno,
                 );
