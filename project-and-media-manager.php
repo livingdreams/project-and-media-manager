@@ -59,7 +59,7 @@ function create_pmm_tables() {
     $table_name = $wpdb->prefix . 'devices';
     $charset_collate = $wpdb->get_charset_collate();
     $sql_devices = "CREATE TABLE IF NOT EXISTS $table_name (
-  `pid` int(9) unsigned NOT NULL,
+  `pid` int(9) unsigned NOT NULL AUTO_INCREMENT,
   `clientid` varchar(64) NOT NULL,
   `appname` varchar(255) NOT NULL,
   `appversion` varchar(25) DEFAULT NULL,
@@ -82,7 +82,7 @@ function create_pmm_tables() {
 
     $table_name = $wpdb->prefix . 'messages';
     $sql_messages = "CREATE TABLE IF NOT EXISTS $table_name (
-  `pid` int(9) unsigned NOT NULL,
+  `pid` int(9) unsigned NOT NULL AUTO_INCREMENT,
   `clientid` varchar(64) NOT NULL,
   `fk_device` int(9) unsigned NOT NULL,
   `message` varchar(255) NOT NULL,

@@ -305,7 +305,7 @@ class APNS {
         else if ($pushalert != 'disabled' && $pushalert != 'enabled')
             $this->_triggerError('Push Alert must be either Enabled or Disabled.', E_USER_ERROR);
         else if ($pushsound != 'disabled' && $pushsound != 'enabled')
-            $this->_triggerError('Push Sount must be either Enabled or Disabled.', E_USER_ERROR);
+            $this->_triggerError('Push Sound must be either Enabled or Disabled.', E_USER_ERROR);
 
         $appname = esc_sql($appname);
         $appversion = esc_sql($appversion);
@@ -322,6 +322,39 @@ class APNS {
 
         // store device for push notifications
         $this->db->query("SET NAMES 'utf8';"); // force utf8 encoding if not your default
+        /* $sql = "INSERT INTO `{$this->db->prefix}devices`
+          VALUES (
+          NULL,
+          '{$clientid}',
+          '{$appname}',
+          '{$appversion}',
+          '{$deviceuid}',
+          '{$devicetoken}',
+          '{$devicename}',
+          '{$devicemodel}',
+          '{$deviceversion}',
+          '{$pushbadge}',
+          '{$pushalert}',
+          '{$pushsound}',
+          'production',
+          'active',
+          NOW(),
+          NOW(),
+          '{$username}'
+          )
+          ON DUPLICATE KEY UPDATE
+          `devicetoken`='{$devicetoken}',
+          `devicename`='{$devicename}',
+          `devicemodel`='{$devicemodel}',
+          `deviceversion`='{$deviceversion}',
+          `pushbadge`='{$pushbadge}',
+          `pushalert`='{$pushalert}',
+          `pushsound`='{$pushsound}',
+          `status`='active',
+          `modified`=NOW(),
+          `username`='{$username}';"; */
+
+
         $sql = "INSERT INTO `{$this->db->prefix}devices`
 				VALUES (
 					NULL,
@@ -341,18 +374,8 @@ class APNS {
 					NOW(),
 					NOW(),
 					'{$username}'
-				)
-				ON DUPLICATE KEY UPDATE
-				`devicetoken`='{$devicetoken}',
-				`devicename`='{$devicename}',
-				`devicemodel`='{$devicemodel}',
-				`deviceversion`='{$deviceversion}',
-				`pushbadge`='{$pushbadge}',
-				`pushalert`='{$pushalert}',
-				`pushsound`='{$pushsound}',
-				`status`='active',
-				`modified`=NOW(),
-				`username`='{$username}';";
+				)";
+
         $this->db->query($sql);
     }
 
@@ -360,23 +383,123 @@ class APNS {
     /* Update device info */
 
     private function _updateDevice($appname, $appversion, $devicetoken, $devicename, $devicemodel, $deviceversion, $pushbadge, $pushalert, $pushsound, $username) {
-        $sql = "UPDATE `{$this->db->prefix}devices`
-				SET `appversion`='{$appversion}',`devicename`='{$devicename}',`devicemodel`='{$devicemodel}',
-				`deviceversion`='{$deviceversion}',`pushbadge`='{$pushbadge}',`pushalert`='{$pushalert}',
-				`pushsound`='{$pushsound}',`username`='{$username}',`modified`=NOW()
-				WHERE `devicetoken`='{$devicetoken}' and `appname`='{$appname}'
+
+        if (strlen($appname) == 0)
+            $this->_triggerError('Application Name must not be blank.', E_USER_ERROR);
+        else if (strlen($appversion) == 0)
+            $this->_triggerError('Application Version must not be blank.', E_USER_ERROR);
+        else if (strlen($devicetoken) != 64)
+            $this->_triggerError('Device Token must be 64 characters in length.', E_USER_ERROR);
+        else if (strlen($devicename) == 0)
+            $this->_triggerError('Device Name must not be blank.', E_USER_ERROR);
+        else if (strlen($devicemodel) == 0)
+            $this->_triggerError('Device Model must not be blank.', E_USER_ERROR);
+        else if (strlen($deviceversion) == 0)
+            $this->_triggerError('Device Version must not be blank.', E_USER_ERROR);
+        else if ($pushbadge != 'disabled' && $pushbadge != 'enabled')
+            $this->_triggerError('Push Badge must be either Enabled or Disabled.', E_USER_ERROR);
+        else if ($pushalert != 'disabled' && $pushalert != 'enabled')
+            $this->_triggerError('Push Alert must be either Enabled or Disabled.', E_USER_ERROR);
+        else if ($pushsound != 'disabled' && $pushsound != 'enabled')
+            $this->_triggerError('Push Sound must be either Enabled or Disabled.', E_USER_ERROR);
+
+        $appname = esc_sql($appname);
+        $appversion = esc_sql($appversion);
+        $devicetoken = esc_sql($devicetoken);
+        $devicename = esc_sql($devicename);
+        $devicemodel = esc_sql($devicemodel);
+        $deviceversion = esc_sql($deviceversion);
+        $pushbadge = esc_sql($pushbadge);
+        $pushalert = esc_sql($pushalert);
+        $pushsound = esc_sql($pushsound);
+        $username = esc_sql($username);
+
+
+
+        $query = $this->db->query("SELECT `pid` FROM `{$this->db->prefix}devices` WHERE `devicetoken`='{$devicetoken}'");
+
+        $row = $query->row();
+        if (isset($row)) {
+
+            $sqlset = "`appversion`='{$appversion}',`devicename`='{$devicename}',`devicemodel`='{$devicemodel}',
+			`deviceversion`='{$deviceversion}',`pushbadge`='{$pushbadge}',`pushalert`='{$pushalert}',
+		        `pushsound`='{$pushsound}',`username`='{$username}',`modified`=NOW()";
+
+            if ($username != null) {
+                $query_client_id = $this->db->query("SELECT `id` FROM `{$this->db->prefix}clients` WHERE `username`='{$username}'");
+                $row_client = $query_client_id->row();
+                if ($row_client) {
+                    $sqlset .= " `clientid`='{$row_client->id}',`username`='{$username}'";
+                }
+            }
+
+
+            $sql = "UPDATE `{$this->db->prefix}devices`
+				SET $sqlset
+				WHERE `pid`='{$row->pid}'
 				LIMIT 1;";
-        $this->db->query($sql);
+            $this->db->query($sql);
+        } else {
+
+            $clientid = null;
+            $clientname = null;
+            $deviceuid = null;
+                    
+            if ($username != null) {
+                $query_client_id = $this->db->query("SELECT `id` FROM `{$this->db->prefix}clients` WHERE `username`='{$username}'");
+                $row_client = $query_client_id->row();
+                if ($row_client) {
+                    $clientid = $row_client->id;
+                    $clientname = $username;
+                }
+            }
+
+            // store device for push notifications
+            $this->db->query("SET NAMES 'utf8';"); // force utf8 encoding if not your default
+            $sql = "INSERT INTO `{$this->db->prefix}devices`
+				VALUES (
+					NULL,
+					'{$clientid}',
+					'{$appname}',
+					'{$appversion}',
+					'{$deviceuid}',
+					'{$devicetoken}',
+					'{$devicename}',
+					'{$devicemodel}',
+					'{$deviceversion}',
+					'{$pushbadge}',
+					'{$pushalert}',
+					'{$pushsound}',
+					'production',
+					'active',
+					NOW(),
+					NOW(),
+					'{$clientname}'
+				)";
+            $this->db->query($sql);
+        }
+
+        /* $sql= "UPDATE `{$this->db->prefix}devices`
+          SET `appversion`='{$appversion}',`devicename`='{$devicename}',`devicemodel`='{$devicemodel}',
+          `deviceversion`='{$deviceversion}',`pushbadge`='{$pushbadge}',`pushalert`='{$pushalert}',
+          `pushsound`='{$pushsound}',`username`='{$username}',`modified`=NOW()
+          WHERE `devicetoken`='{$devicetoken}' and `appname`='{$appname}'
+          LIMIT 1;";
+          $this->db->query($sql); */
     }
 
     private function _unreg_name($appname, $appversion, $devicetoken, $devicename, $devicemodel, $deviceversion, $pushbadge, $pushalert, $pushsound, $username) {
-        $sql = "UPDATE `{$this->db->prefix}devices`
+        /*$sql = "UPDATE `{$this->db->prefix}devices`
 				SET `appversion`='{$appversion}',`devicename`='{$devicename}',`devicemodel`='{$devicemodel}',
 				`deviceversion`='{$deviceversion}',`pushbadge`='{$pushbadge}',`pushalert`='{$pushalert}',
 				`pushsound`='{$pushsound}',`username`= null,`modified`=NOW() 
 				WHERE `devicetoken`='{$devicetoken}' and `appname`='{$appname}' and `username`='{$username}'
 				LIMIT 1;";
+        $this->db->query($sql);*/
+        
+        $sql = "DELETE FROM `{$this->db->prefix}devices` WHERE `devicetoken`='{$devicetoken}'";
         $this->db->query($sql);
+        
     }
 
     /* ALBIN */
@@ -799,7 +922,7 @@ class APNS {
 
             // Only to a set of client?
             if (!is_null($clientId))
-                $sql .= " AND `clientid` = '".esc_sql($clientId)."'";
+                $sql .= " AND `clientid` = '" . esc_sql($clientId) . "'";
 
             $ids = array();
             $result = $this->db->query($sql);
