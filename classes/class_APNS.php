@@ -446,8 +446,7 @@ class APNS {
             $deviceuid = null;
                     
             if ($username != null) {
-                $query_client_id = $this->db->query("SELECT `id` FROM `{$this->db->prefix}clients` WHERE `username`='{$username}'");
-                $row_client = $query_client_id->row();
+                $row_client = $this->db->get_row("SELECT `id` FROM `{$this->db->prefix}clients` WHERE `username`='{$username}'");
                 if ($row_client) {
                     $clientid = $row_client->id;
                     $clientname = $username;
