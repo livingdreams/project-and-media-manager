@@ -416,20 +416,18 @@ class APNS {
 
 
 
-        $query = $this->db->query("SELECT `pid` FROM `{$this->db->prefix}devices` WHERE `devicetoken`='{$devicetoken}'");
-
-        $row = $query->row();
+        //$query = $this->db->query("SELECT `pid` FROM `{$this->db->prefix}devices` WHERE `devicetoken`='{$devicetoken}'");
+        $row = $this->db->get_row("SELECT `pid` FROM `{$this->db->prefix}devices` WHERE `devicetoken`='{$devicetoken}'");
         if (isset($row)) {
 
             $sqlset = "`appversion`='{$appversion}',`devicename`='{$devicename}',`devicemodel`='{$devicemodel}',
 			`deviceversion`='{$deviceversion}',`pushbadge`='{$pushbadge}',`pushalert`='{$pushalert}',
-		        `pushsound`='{$pushsound}',`username`='{$username}',`modified`=NOW()";
+		        `pushsound`='{$pushsound}',`modified`=NOW()";
 
             if ($username != null) {
-                $query_client_id = $this->db->query("SELECT `id` FROM `{$this->db->prefix}clients` WHERE `username`='{$username}'");
-                $row_client = $query_client_id->row();
+                $row_client = $this->db->get_row("SELECT `id` FROM `{$this->db->prefix}clients` WHERE `username`='{$username}'");
                 if ($row_client) {
-                    $sqlset .= " `clientid`='{$row_client->id}',`username`='{$username}'";
+                    $sqlset .= " ,`clientid`='{$row_client->id}',`username`='{$username}'";
                 }
             }
 
@@ -438,6 +436,8 @@ class APNS {
 				SET $sqlset
 				WHERE `pid`='{$row->pid}'
 				LIMIT 1;";
+
+      
             $this->db->query($sql);
         } else {
 
