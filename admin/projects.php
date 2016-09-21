@@ -114,7 +114,7 @@ if (!class_exists('WP_ClientProject')) {
             <select name='client_id' id='projects_meta_box_client'>
                 <option value="">Please Select</option>
                 <?php foreach ($clients->get_clients() as $client): ?>
-                    <option value="<?php echo esc_attr($client->id); ?>" <?php selected($client->id, $client_id); ?>><?php echo esc_html($client->firstname); ?></option>
+                       <option value="<?php echo esc_attr($client->id); ?>" <?php selected($client->id, $client_id); ?>><?php echo esc_html($client->username); ?> - (<?php echo esc_html($client->firstname ); ?> <?php echo esc_html($client->lastname ); ?>)</option>
                 <?php endforeach; ?>
             </select>
 
@@ -135,6 +135,8 @@ if (!class_exists('WP_ClientProject')) {
             if (!current_user_can('edit_post', $post->ID)) {
                 return $post->ID;
             }
+            
+            
             // put it into an array to find and save the data
             $projects_post_meta['_client_id'] = $_POST['client_id'];
 
@@ -175,6 +177,7 @@ if (!class_exists('WP_ClientProject')) {
             $table = $wpdb->prefix . 'devices';
             $devices = $wpdb->get_results("SELECT devicetoken AS UL FROM $table WHERE clientid = " . $data['_client_id'] . "");
 
+
             foreach ($devices as $key => $device) {
                 $this->_badge = intval($data['_unseen']);
                 $payload['aps'] = array(
@@ -184,12 +187,15 @@ if (!class_exists('WP_ClientProject')) {
                 );
                 $this->_payload = json_encode($payload);
 
-                $apns_message = chr(0) . chr(0) . chr(32) . pack('H*', str_replace(' ', '', $device)) . chr(0) . chr(strlen($this->_payload)) . $this->_payload;
+
+                //$apns_message = 'Test';
+                $apns_message = chr(0) . chr(0) . chr(32) . pack('H*', str_replace(' ', '', $device->UL)) . chr(0) . chr(strlen($this->_payload)) . $this->_payload;
                 fwrite($apns, $apns_message);
 
                 $filename = PMM_DIR."pushed.txt";
                 $fh = fopen($filename, "a") or die("Could not open log file.");
-                fwrite($fh, date("d-m-Y, H:i") . " - t:" . $key . " of " . count($this->_devices) . " seen=$this->_badge devToken=$device\n") or die("Could not write file!");
+
+                fwrite($fh, date("d-m-Y, H:i") . " - t:" . $key . " of " . count($devices) . " seen=". $this->_badge ." devToken=". $device->UL) or die("Could not write file!");
                 fclose($fh);
             }
 
