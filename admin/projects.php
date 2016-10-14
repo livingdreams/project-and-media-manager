@@ -22,6 +22,7 @@ if (!class_exists('WP_ClientProject')) {
         private $_apns_port = 2195;
         private $_apns_cert = 'pmm-live.pem';
         private $_passphrase = '#tivadar123';
+        private $_andriod_acess_key = 'AIzaSyBuhOCVQsdZYJ_wnelfIcxxJhFUldRD_Zo';
 
         public function __construct() {
             add_action('init', array(__CLASS__, 'init'));
@@ -192,14 +193,14 @@ if (!class_exists('WP_ClientProject')) {
                 }
             }
 
-            
+
             //if ($projects_post_meta['_unseen'] != 0)
             //$this->pushNotifcation($projects_post_meta);
-            
+
             $pushdata = array(
                 'post_id' => $post->ID,
             );
-            
+
             $this->pushNotifcation($pushdata);
         }
 
@@ -220,30 +221,70 @@ if (!class_exists('WP_ClientProject')) {
             $apns = stream_socket_client('ssl://' . $this->_apns_url . ':' . $this->_apns_port, $error, $errorString, 2, STREAM_CLIENT_CONNECT, $streamContext);
 
             $table = $wpdb->prefix . 'devices';
-            $table_unseen = $wpdb->prefix . 'user_unseen';        
-            
+            $table_unseen = $wpdb->prefix . 'user_unseen';
+
             //$devices = $wpdb->get_results("SELECT devicetoken AS UL FROM $table WHERE clientid = " . $data['_client_id'] . "");
-            $devices = $wpdb->get_results("SELECT devicetoken AS UL, unseen AS US FROM $table, $table_unseen WHERE clientid = user_id AND post_id = " . $data['post_id'] . "");
-            
+            $devices = $wpdb->get_results("SELECT devicetoken AS UL, unseen AS US, devicemodel AS DM FROM $table, $table_unseen WHERE clientid = user_id AND post_id = " . $data['post_id'] . "");
+
             foreach ($devices as $key => $device) {
-                //$this->_badge = intval($data['_unseen']);
-                $this->_badge = intval($device->US);
-                $payload['aps'] = array(
-                    'alert' => 'Updates available.',
-                    'badge' => $this->_badge,
-                    'sound' => 'default'
-                );
-                $this->_payload = json_encode($payload);
+                if ($device->DM != 'Android') {
+                    //$this->_badge = intval($data['_unseen']);
+                    $this->_badge = intval($device->US);
+                    $payload['aps'] = array(
+                        'alert' => 'Updates available.',
+                        'badge' => $this->_badge,
+                        'sound' => 'default'
+                    );
+                    $this->_payload = json_encode($payload);
 
 
-                //$apns_message = 'Test';
-                $apns_message = chr(0) . chr(0) . chr(32) . pack('H*', str_replace(' ', '', $device->UL)) . chr(0) . chr(strlen($this->_payload)) . $this->_payload;
-                fwrite($apns, $apns_message);
+                    //$apns_message = 'Test';
+                    $apns_message = chr(0) . chr(0) . chr(32) . pack('H*', str_replace(' ', '', $device->UL)) . chr(0) . chr(strlen($this->_payload)) . $this->_payload;
+                    fwrite($apns, $apns_message);
+                } else {
+                    
+                    $message = array(
+                        'text' => 'Updates available.',
+                        'badge_count' => intval($device->US)
+                    );
+
+                    $android_msg = array(
+                        'message' => json_encode($message),
+                        'title' => ' Disaster Restoration Alert',
+                        'subtitle' => '',
+                        'tickerText' => '',
+                        'vibrate' => 1,
+                        'sound' => 1,
+                            //'largeIcon'	=> 'large_icon',
+                            //'smallIcon'	=> 'small_icon'
+                    );
+
+                    $fields = array(
+                        'registration_ids' => $device->UL,
+                        'data' => $android_msg
+                    );
+
+                    $headers = array(
+                        'Authorization: key=' . $this->_andriod_acess_key,
+                        'Content-Type: application/json'
+                    );
+
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, 'https://android.googleapis.com/gcm/send');
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+                    $result = curl_exec($ch);
+                    curl_close($ch);
+                }
+
 
                 $filename = PMM_DIR . "pushed.txt";
                 $fh = fopen($filename, "a") or die("Could not open log file.");
 
-                fwrite($fh, date("dd-mm-Y, H:i") . " - t:" . $key . " of " . count($devices) . " seen=" . $this->_badge . " devToken=" . $device->UL) or die("Could not write file!");
+                fwrite($fh, date("d-m-Y, H:i") . " - t:" . $key . " of " . count($devices) . " seen=" . $device->US . " devToken=" . $device->UL . " devModel=" . $device->DM ) or die("Could not write file!");
                 fclose($fh);
             }
 
