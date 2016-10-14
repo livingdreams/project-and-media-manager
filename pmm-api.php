@@ -109,8 +109,14 @@ if ($require == 'wp-api/location') {
 
     //reset unseen 
     if (isset($_REQUEST['url_id'])) {
-        if ($project = get_post($_REQUEST['url_id'])) {
-            update_post_meta($project->ID, '_unseen', 0);
+        /* if ($project = get_post($_REQUEST['url_id'])) {
+          update_post_meta($project->ID, '_unseen', 0);
+          echo('{"AuthenticateResult":1}');
+          } */
+        $unseen = new WP_USER_UNSSEN();
+        $row = $unseen->get_row('id', $_REQUEST['url_id']);
+        if ($row) {
+            $unseen->update_unseen($_REQUEST['url_id']);
             echo('{"AuthenticateResult":1}');
         } else {
             echo('{"AuthenticateResult":0}');
@@ -135,6 +141,7 @@ if ($require == 'wp-api/location') {
 function create_json($username) {
     $pmm_options = get_option('pmm_settings');
     $client = new WP_Client();
+    $unseen = new WP_USER_UNSSEN();
     $args = array(
         'posts_per_page' => -1,
         'offset' => 0,
@@ -147,13 +154,33 @@ function create_json($username) {
         if (!$client->is_admin) {
             $args['meta_key'] = '_client_id';
             $uid = $args['meta_value'] = $client->id;
+        } else {
+            $user_query = new WP_User_Query(array('role' => 'Administrator'));
+            if (!empty($user_query->results)) {
+                $admin_list = "";
+
+                foreach ($user_query->results as $user) {
+                    $admin_list .= ',' . $user->ID;
+                }
+            }
+            $uid = $client->id;
+            $args['author'] = trim($admin_list, ",");
         }
     } else if ($franchise = get_userdatabylogin($username)) {
         $uid = $args['author'] = $franchise->ID;
     }
+
+
     $loop = new WP_Query($args);
 
     foreach ($loop->posts as $k => $project):
+        $condition = " post_id = $project->ID AND user_id = $uid ";
+        $unseen_results = $unseen->get_single_row($condition);
+        if ($unseen_results) {
+            $url_id = $unseen_results->id;
+            $unseen_count = $unseen_results->unseen;
+        }
+
         //if ($k > 25 && $client->is_admin)break;
         $images = $doc_titles = $doc_links = array();
         //has milestones
@@ -200,8 +227,10 @@ function create_json($username) {
         $projects[] = array(
             'name' => $project->post_title,
             'post_modified' => $project->post_modified,
-            'url_id' => (string) $project->ID,
-            'unseen' => get_post_meta($project->ID, '_unseen', true),
+            //'url_id' => (string) $project->ID,
+            //'unseen' => get_post_meta($project->ID, '_unseen', true),
+            'url_id' => (string) $url_id,
+            'unseen' => (string) $unseen_count,
             'progress' => $progress,
             'images' => array_reverse($images),
             'doc-titles' => $doc_titles,

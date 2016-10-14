@@ -54,6 +54,7 @@ register_activation_hook(__FILE__, 'pmm_plugin_activation');
 function create_pmm_tables() {
     WP_Area::createTable();
     WP_Client::createTable();
+    WP_USER_UNSSEN::createTable();
     //Create tabels
     global $wpdb;
     $table_name = $wpdb->prefix . 'devices';

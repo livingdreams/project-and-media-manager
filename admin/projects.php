@@ -114,7 +114,7 @@ if (!class_exists('WP_ClientProject')) {
             <select name='client_id' id='projects_meta_box_client'>
                 <option value="">Please Select</option>
                 <?php foreach ($clients->get_clients() as $client): ?>
-                       <option value="<?php echo esc_attr($client->id); ?>" <?php selected($client->id, $client_id); ?>><?php echo esc_html($client->username); ?> - (<?php echo esc_html($client->firstname ); ?> <?php echo esc_html($client->lastname ); ?>)</option>
+                    <option value="<?php echo esc_attr($client->id); ?>" <?php selected($client->id, $client_id); ?>><?php echo esc_html($client->username); ?> - (<?php echo esc_html($client->firstname); ?> <?php echo esc_html($client->lastname); ?>)</option>
                 <?php endforeach; ?>
             </select>
 
@@ -127,6 +127,8 @@ if (!class_exists('WP_ClientProject')) {
          * @param object $post
          */
         function save_projects_meta_data($post_id, $post) {
+
+
             //To verify this came from project post type & verify the authorization.
             if (!isset($_POST['pmm_projects_nonce']) || !wp_verify_nonce($_POST['pmm_projects_nonce'], plugin_basename(__FILE__))) {
                 return $post->ID;
@@ -135,27 +137,70 @@ if (!class_exists('WP_ClientProject')) {
             if (!current_user_can('edit_post', $post->ID)) {
                 return $post->ID;
             }
-            
-            
+
+
             // put it into an array to find and save the data
             $projects_post_meta['_client_id'] = $_POST['client_id'];
 
-            $unseen = get_post_meta($post->ID, '_unseen', true);
-            $projects_post_meta['_unseen'] = $unseen == '' ? 1 : ($unseen + 1);
-
+            //$unseen = get_post_meta($post->ID, '_unseen', true);
+            //$projects_post_meta['_unseen'] = $unseen == '' ? 1 : ($unseen + 1);
             // add values as custom fields
             foreach ($projects_post_meta as $key => $value) {
+
+                $user_array = array();
+                array_push($user_array, array("user_id" => $_POST['client_id'], "is_client" => "1"));
+                $author_id = $post->post_author;
+                $user_info = get_userdata($author_id);
+
+                if (in_array("administrator", $user_info->roles)) {
+                    $client = new WP_Client();
+                    $condition = "WHERE is_admin = 1 AND status = 1";
+                    $clients = $client->get_results($condition);
+                    if ($clients) {
+                        foreach ($clients as $client_row) {
+                            if ($_POST['client_id'] != $client_row->id)
+                                array_push($user_array, array("user_id" => $client_row->id, "is_client" => "1"));
+                        }
+                    }
+                }else {
+                    array_push($user_array, array("user_id" => $author_id, "is_client" => "0"));
+                }
+
+
+                $unseen_obj = new WP_USER_UNSSEN();
                 if (get_post_meta($post->ID, $key, FALSE)) { // if the custom field already has a value
                     update_post_meta($post->ID, $key, $value);
-                } else { // if the custom field doesn't have a value
+                } else { // if the custom field doesn't have a value     
                     add_post_meta($post->ID, $key, $value);
                 }
+
+
+                foreach ($user_array as $user) {
+                    $data = array(
+                        'user_id' => $user['user_id'],
+                        'post_id' => $post->ID,
+                        'is_client' => $user['is_client'],
+                        'status' => 1,
+                    );
+
+                    $unseen_obj->update_row($data);
+                }
+
+
                 if ($value === '') { // delete if blank
                     delete_post_meta($post->ID, $key);
                 }
             }
-            if ($projects_post_meta['_unseen'] != 0)
-                $this->pushNotifcation($projects_post_meta);
+
+            
+            //if ($projects_post_meta['_unseen'] != 0)
+            //$this->pushNotifcation($projects_post_meta);
+            
+            $pushdata = array(
+                'post_id' => $post->ID,
+            );
+            
+            $this->pushNotifcation($pushdata);
         }
 
         /**
@@ -175,11 +220,14 @@ if (!class_exists('WP_ClientProject')) {
             $apns = stream_socket_client('ssl://' . $this->_apns_url . ':' . $this->_apns_port, $error, $errorString, 2, STREAM_CLIENT_CONNECT, $streamContext);
 
             $table = $wpdb->prefix . 'devices';
-            $devices = $wpdb->get_results("SELECT devicetoken AS UL FROM $table WHERE clientid = " . $data['_client_id'] . "");
-
-
+            $table_unseen = $wpdb->prefix . 'user_unseen';        
+            
+            //$devices = $wpdb->get_results("SELECT devicetoken AS UL FROM $table WHERE clientid = " . $data['_client_id'] . "");
+            $devices = $wpdb->get_results("SELECT devicetoken AS UL, unseen AS US FROM $table, $table_unseen WHERE clientid = user_id AND post_id = " . $data['post_id'] . "");
+            
             foreach ($devices as $key => $device) {
-                $this->_badge = intval($data['_unseen']);
+                //$this->_badge = intval($data['_unseen']);
+                $this->_badge = intval($device->US);
                 $payload['aps'] = array(
                     'alert' => 'Updates available.',
                     'badge' => $this->_badge,
@@ -192,10 +240,10 @@ if (!class_exists('WP_ClientProject')) {
                 $apns_message = chr(0) . chr(0) . chr(32) . pack('H*', str_replace(' ', '', $device->UL)) . chr(0) . chr(strlen($this->_payload)) . $this->_payload;
                 fwrite($apns, $apns_message);
 
-                $filename = PMM_DIR."pushed.txt";
+                $filename = PMM_DIR . "pushed.txt";
                 $fh = fopen($filename, "a") or die("Could not open log file.");
 
-                fwrite($fh, date("d-m-Y, H:i") . " - t:" . $key . " of " . count($devices) . " seen=". $this->_badge ." devToken=". $device->UL) or die("Could not write file!");
+                fwrite($fh, date("dd-mm-Y, H:i") . " - t:" . $key . " of " . count($devices) . " seen=" . $this->_badge . " devToken=" . $device->UL) or die("Could not write file!");
                 fclose($fh);
             }
 

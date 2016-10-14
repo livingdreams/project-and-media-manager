@@ -14,6 +14,7 @@ if (!defined('ABSPATH')) {
 
 require_once (PMM_DIR . 'models/wp-area.php');
 require_once (PMM_DIR . 'models/wp-client.php');
+require_once (PMM_DIR . 'models/wp-user-unseen.php');
 
 
 if (!function_exists('pmm_admin_scripts')) {
