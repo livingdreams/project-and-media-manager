@@ -320,42 +320,95 @@ class APNS {
         $clientid = esc_sql($clientid);
         $username = esc_sql($username);
 
-        // store device for push notifications
-        $this->db->query("SET NAMES 'utf8';"); // force utf8 encoding if not your default
-        /* $sql = "INSERT INTO `{$this->db->prefix}devices`
-          VALUES (
-          NULL,
-          '{$clientid}',
-          '{$appname}',
-          '{$appversion}',
-          '{$deviceuid}',
-          '{$devicetoken}',
-          '{$devicename}',
-          '{$devicemodel}',
-          '{$deviceversion}',
-          '{$pushbadge}',
-          '{$pushalert}',
-          '{$pushsound}',
-          'production',
-          'active',
-          NOW(),
-          NOW(),
-          '{$username}'
-          )
-          ON DUPLICATE KEY UPDATE
-          `devicetoken`='{$devicetoken}',
-          `devicename`='{$devicename}',
-          `devicemodel`='{$devicemodel}',
-          `deviceversion`='{$deviceversion}',
-          `pushbadge`='{$pushbadge}',
-          `pushalert`='{$pushalert}',
-          `pushsound`='{$pushsound}',
-          `status`='active',
-          `modified`=NOW(),
-          `username`='{$username}';"; */
 
 
-        $sql = "INSERT INTO `{$this->db->prefix}devices`
+
+        $row = $this->db->get_row("SELECT `pid` FROM `{$this->db->prefix}devices` WHERE `devicetoken`='{$devicetoken}'");
+        if (isset($row)) {
+
+            $sqlset = "`appversion`='{$appversion}',`devicename`='{$devicename}',`devicemodel`='{$devicemodel}',
+			`deviceversion`='{$deviceversion}',`pushbadge`='{$pushbadge}',`pushalert`='{$pushalert}',
+		        `pushsound`='{$pushsound}',`modified`=NOW()";
+
+            if ($username != null) {
+                $row_client = $this->db->get_row("SELECT `id` FROM `{$this->db->prefix}clients` WHERE `username`='{$username}'");
+                if ($row_client) {
+                    $sqlset .= " ,`clientid`='{$row_client->id}',`username`='{$username}'";
+                } else {
+                    $row_user = $this->db->get_row("SELECT `ID` FROM `{$this->db->prefix}users` WHERE `user_login`='{$username}'");
+                    if ($row_user) {
+                        $sqlset .= " ,`clientid`='{$row_user->ID}',`username`='{$username}'";
+                    }
+                }
+            }
+
+
+            $sql = "UPDATE `{$this->db->prefix}devices`
+				SET $sqlset
+				WHERE `pid`='{$row->pid}'
+				LIMIT 1;";
+
+
+            $this->db->query($sql);
+        } else {
+
+            $clientid = null;
+            $clientname = null;
+            //$deviceuid = null;
+
+            if ($username != null) {
+                $row_client = $this->db->get_row("SELECT `id` FROM `{$this->db->prefix}clients` WHERE `username`='{$username}'");
+                if ($row_client) {
+                    $clientid = $row_client->id;
+                    $clientname = $username;
+                } else {
+                    $row_user = $this->db->get_row("SELECT `ID` FROM `{$this->db->prefix}users` WHERE `user_login`='{$username}'");
+                    if ($row_user) {
+                        //$sqlset .= " ,`clientid`='{$row_user->ID}',`username`='{$username}'";
+                        $clientid = $row_user->ID;
+                        $clientname = $username;
+                    }
+                }
+            }
+
+
+
+            // store device for push notifications
+            $this->db->query("SET NAMES 'utf8';"); // force utf8 encoding if not your default
+            /* $sql = "INSERT INTO `{$this->db->prefix}devices`
+              VALUES (
+              NULL,
+              '{$clientid}',
+              '{$appname}',
+              '{$appversion}',
+              '{$deviceuid}',
+              '{$devicetoken}',
+              '{$devicename}',
+              '{$devicemodel}',
+              '{$deviceversion}',
+              '{$pushbadge}',
+              '{$pushalert}',
+              '{$pushsound}',
+              'production',
+              'active',
+              NOW(),
+              NOW(),
+              '{$username}'
+              )
+              ON DUPLICATE KEY UPDATE
+              `devicetoken`='{$devicetoken}',
+              `devicename`='{$devicename}',
+              `devicemodel`='{$devicemodel}',
+              `deviceversion`='{$deviceversion}',
+              `pushbadge`='{$pushbadge}',
+              `pushalert`='{$pushalert}',
+              `pushsound`='{$pushsound}',
+              `status`='active',
+              `modified`=NOW(),
+              `username`='{$username}';"; */
+
+
+            $sql = "INSERT INTO `{$this->db->prefix}devices`
 				VALUES (
 					NULL,
 					'{$clientid}',
@@ -373,10 +426,11 @@ class APNS {
 					'active',
 					NOW(),
 					NOW(),
-					'{$username}'
+					'{$clientname}'
 				)";
 
-        $this->db->query($sql);
+            $this->db->query($sql);
+        }
     }
 
     /* ALBIN */
@@ -448,7 +502,7 @@ class APNS {
 
             $clientid = null;
             $clientname = null;
-            $deviceuid = null;
+            //$deviceuid = null;
 
             if ($username != null) {
                 $row_client = $this->db->get_row("SELECT `id` FROM `{$this->db->prefix}clients` WHERE `username`='{$username}'");
@@ -461,7 +515,6 @@ class APNS {
                         //$sqlset .= " ,`clientid`='{$row_user->ID}',`username`='{$username}'";
                         $clientid = $row_user->ID;
                         $clientname = $username;
-                        
                     }
                 }
             }

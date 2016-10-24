@@ -224,7 +224,7 @@ if (!class_exists('WP_ClientProject')) {
             $table_unseen = $wpdb->prefix . 'user_unseen';
 
             //$devices = $wpdb->get_results("SELECT devicetoken AS UL FROM $table WHERE clientid = " . $data['_client_id'] . "");
-            $devices = $wpdb->get_results("SELECT devicetoken AS UL, unseen AS US, devicemodel AS DM FROM $table, $table_unseen WHERE clientid = user_id AND post_id = " . $data['post_id'] . "");
+            $devices = $wpdb->get_results("SELECT distinct devicetoken AS UL, unseen AS US, devicemodel AS DM FROM $table, $table_unseen WHERE clientid = user_id AND post_id = " . $data['post_id'] . "");
 
             foreach ($devices as $key => $device) {
                 if ($device->DM != 'Android') {
