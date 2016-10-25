@@ -50,6 +50,12 @@ if ($require == 'wp-api/location') {
 
         echo json_encode(array('version' => 2.4));
     }
+    
+    if ($require == 'wp-api/appversion_android.php') {
+
+        echo json_encode(array('version' => 1.0));
+    }
+    
 
     /**
      * User and franchisee login
