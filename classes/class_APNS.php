@@ -284,7 +284,7 @@ class APNS {
      * @param string $clientid The clientid of the app for message grouping
      * @access private
      */
-    private function _registerDevice($appname, $appversion, $deviceuid, $devicetoken, $devicename, $devicemodel, $deviceversion, $pushbadge, $pushalert, $pushsound, $clientid = NULL, $username) {
+    private function _registerDevice($appname, $appversion, $deviceuid, $devicetoken, $devicename, $devicemodel, $deviceversion, $pushbadge, $pushalert, $pushsound, $username) {
 
         if (strlen($appname) == 0)
             $this->_triggerError('Application Name must not be blank.', E_USER_ERROR);
@@ -317,10 +317,11 @@ class APNS {
         $pushbadge = esc_sql($pushbadge);
         $pushalert = esc_sql($pushalert);
         $pushsound = esc_sql($pushsound);
-        $clientid = esc_sql($clientid);
+        //$clientid = esc_sql($clientid);
         $username = esc_sql($username);
 
-
+        $clientid = null;
+        $clientname = null;
 
 
         $row = $this->db->get_row("SELECT `pid` FROM `{$this->db->prefix}devices` WHERE `devicetoken`='{$devicetoken}'");
@@ -351,10 +352,6 @@ class APNS {
 
             $this->db->query($sql);
         } else {
-
-            $clientid = null;
-            $clientname = null;
-            //$deviceuid = null;
 
             if ($username != null) {
                 $row_client = $this->db->get_row("SELECT `id` FROM `{$this->db->prefix}clients` WHERE `username`='{$username}'");
@@ -443,7 +440,7 @@ class APNS {
         else if (strlen($appversion) == 0)
             $this->_triggerError('Application Version must not be blank.', E_USER_ERROR);
         else if (strlen($devicetoken) > 250)
-            $this->_triggerError('Device Token may not be more than 250 characters in length.', E_USER_ERROR);
+            $this->_triggerError('Device Token may not be more than 250 characters in length', E_USER_ERROR);
         else if (strlen($devicename) == 0)
             $this->_triggerError('Device Name must not be blank.', E_USER_ERROR);
         else if (strlen($devicemodel) == 0)

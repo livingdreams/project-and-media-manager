@@ -22,7 +22,7 @@ if (!class_exists('WP_ClientProject')) {
         private $_apns_port = 2195;
         private $_apns_cert = 'pmm-live.pem';
         private $_passphrase = '#tivadar123';
-        private $_andriod_acess_key = 'AIzaSyBuhOCVQsdZYJ_wnelfIcxxJhFUldRD_Zo';
+        private $_andriod_acess_key = 'AIzaSyAU6ESeV7t8AOGs7fPL2shonm3PTlRdEMY';
 
         public function __construct() {
             add_action('init', array(__CLASS__, 'init'));
@@ -260,7 +260,7 @@ if (!class_exists('WP_ClientProject')) {
                     );
 
                     $fields = array(
-                        'registration_ids' => $device->UL,
+                        'registration_ids' => array($device->UL),
                         'data' => $android_msg
                     );
 
@@ -278,7 +278,9 @@ if (!class_exists('WP_ClientProject')) {
                     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
                     $result = curl_exec($ch);
                     curl_close($ch);
+
                 }
+
 
 
                 $filename = PMM_DIR . "pushed.txt";
