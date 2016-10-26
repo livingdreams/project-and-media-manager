@@ -292,8 +292,8 @@ class APNS {
             $this->_triggerError('Application Version must not be blank.', E_USER_ERROR);
         else if (strlen($deviceuid) > 40)
             $this->_triggerError('Device ID may not be more than 40 characters in length.', E_USER_ERROR);
-        else if (strlen($devicetoken) != 64)
-            $this->_triggerError('Device Token must be 64 characters in length.', E_USER_ERROR);
+        else if (strlen($devicetoken) > 250)
+            $this->_triggerError('Device Token may not be more than 250 characters in length.', E_USER_ERROR);
         else if (strlen($devicename) == 0)
             $this->_triggerError('Device Name must not be blank.', E_USER_ERROR);
         else if (strlen($devicemodel) == 0)
@@ -442,8 +442,8 @@ class APNS {
             $this->_triggerError('Application Name must not be blank.', E_USER_ERROR);
         else if (strlen($appversion) == 0)
             $this->_triggerError('Application Version must not be blank.', E_USER_ERROR);
-        else if (strlen($devicetoken) != 64)
-            $this->_triggerError('Device Token must be 64 characters in length.', E_USER_ERROR);
+        else if (strlen($devicetoken) > 250)
+            $this->_triggerError('Device Token may not be more than 250 characters in length.', E_USER_ERROR);
         else if (strlen($devicename) == 0)
             $this->_triggerError('Device Name must not be blank.', E_USER_ERROR);
         else if (strlen($devicemodel) == 0)
