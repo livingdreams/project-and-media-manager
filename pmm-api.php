@@ -50,12 +50,12 @@ if ($require == 'wp-api/location') {
 
         echo json_encode(array('version' => 2.4));
     }
-    
+
     if ($require == 'wp-api/appversion_android.php') {
 
         echo json_encode(array('version' => 1.0));
     }
-    
+
 
     /**
      * User and franchisee login
@@ -140,6 +140,20 @@ if ($require == 'wp-api/location') {
           exit();
           } */
     }
+
+    if (isset($_REQUEST['projectdetail']) && isset($_REQUEST['id'])) {
+        $unseen = new WP_USER_UNSSEN();
+        $row = $unseen->get_row('id', $_REQUEST['id']);
+        if ($row)
+            create_project_json($row->post_id);
+    }
+
+
+    if (isset($_REQUEST['projectlistclient'])) {
+        $user = esc_sql($_REQUEST['projectlistclient']);
+        create_client_json($user);
+    }
+
 
     die();
 }
@@ -242,6 +256,135 @@ function create_json($username) {
             'doc-titles' => $doc_titles,
             'doc-links' => $doc_links,
                 //'author' => $project->post_author
+        );
+        //var_dump($project);
+    endforeach;
+
+    $result = array(
+        'id' => '1',
+        'jsonproc' => '2.0',
+        'total' => (string) $loop->post_count,
+        'results' => array(array(
+                'userid' => (string) $uid,
+                'username' => $username,
+                'role' => '1',
+                'projects' => $projects
+            ))
+    );
+    //$json_file = PMM_DIR . "cache/" . $client->username . ".json";
+    //file_put_contents($json_file, json_encode(str_replace('\n', '\\n', $result)));
+    echo json_encode($result);
+}
+
+function create_project_json($projectID) {
+
+    //if ($k > 25 && $client->is_admin)break;
+    $images = $doc_titles = $doc_links = array();
+    //has milestones
+    if ($milestone = get_post_meta($projectID, 'milestone', true)) {
+        for ($i = 0; $i < $milestone; $i++) :
+
+            $videos = $imgs = $thumb_img = $thumb_vds = array();
+            if ($gallery = get_field('milestone_' . $i . '_gallery', $projectID)):
+                foreach ($gallery as $image):
+                    $imgs[] = array('Url' => $image['url']);
+                    $thumb_img[] = array('Thumbnail' => $image['sizes']['medium']);
+                endforeach;
+            endif;
+            if ($video_uploads = get_post_meta($projectID, 'milestone_' . $i . '_video_uploads', true)):
+                for ($j = 0; $j < $video_uploads; $j++):
+                    $video = get_field('milestone_' . $i . '_video_uploads_' . $j . '_add_video', $projectID);
+                    //$thumb = get_field('milestone_' . $i . '_video_uploads_' . $j . '_video_thumbnail', $project->ID);
+                    $videos[] = array('Url' => $video['url']);
+                    $thumb_vds[] = array('Thumbnail' => $pmm_options['video_thumb_url']);
+                endfor;
+            endif;
+
+            $images[] = array(
+                'Date' => get_field('milestone_' . $i . '_date', $projectID),
+                'Description' => get_post_meta($projectID, 'milestone_' . $i . '_description', true),
+                'Image-Url' => $imgs,
+                'Thumb-Image-Url' => $thumb_img,
+                'Video-Url' => $videos,
+                'Thumb-Video-Url' => $thumb_vds
+            );
+
+        endfor;
+    }
+
+    //has file uploads
+    if ($file_uploads = get_post_meta($projectID, 'file_uploads', true)) {
+        for ($i = 0; $i < $file_uploads; $i++):
+            $file = get_field('file_uploads_' . $i . '_file', $projectID);
+            $doc_links[]['link'] = $file['url'];
+            $doc_titles[]['title'] = get_field('file_uploads_' . $i . '_file_title', $projectID);
+        endfor;
+    }
+
+    $result = array(
+        'images' => array_reverse($images),
+        'doc-titles' => $doc_titles,
+        'doc-links' => $doc_links,
+    );
+    echo json_encode($result);
+}
+
+function create_client_json($username) {
+    $pmm_options = get_option('pmm_settings');
+    $client = new WP_Client();
+    $unseen = new WP_USER_UNSSEN();
+    $args = array(
+        'posts_per_page' => -1,
+        'offset' => 0,
+        //'orderby' => 'menu_order, post_title', // post_date, rand
+        //'order' => 'DESC',
+        'post_type' => 'client_project',
+        'post_status' => 'publish',
+    );
+    if ($client->get_row('username', $username)) {
+        if (!$client->is_admin) {
+            $args['meta_key'] = '_client_id';
+            $uid = $args['meta_value'] = $client->id;
+        } else {
+            $user_query = new WP_User_Query(array('role' => 'Administrator'));
+            if (!empty($user_query->results)) {
+                $admin_list = "";
+
+                foreach ($user_query->results as $user) {
+                    $admin_list .= ',' . $user->ID;
+                }
+            }
+            $uid = $client->id;
+            $args['author'] = trim($admin_list, ",");
+        }
+    } else if ($franchise = get_userdatabylogin($username)) {
+        $uid = $args['author'] = $franchise->ID;
+    }
+
+
+    $loop = new WP_Query($args);
+
+    foreach ($loop->posts as $k => $project):
+        $condition = " post_id = $project->ID AND user_id = $uid ";
+        $unseen_results = $unseen->get_single_row($condition);
+        if ($unseen_results) {
+            $url_id = $unseen_results->id;
+            $unseen_count = $unseen_results->unseen;
+        }
+
+        $milestone = get_post_meta($project->ID, 'milestone', true);
+
+        $progress = get_field('progress', $project->ID);
+        $progress = ($progress == 7) ? 100 : $progress * 15;
+        $projects[] = array(
+            'name' => $project->post_title,
+            'post_modified' => $project->post_modified,
+            //'url_id' => (string) $project->ID,
+            //'unseen' => get_post_meta($project->ID, '_unseen', true),
+            'url_id' => (string) $url_id,
+            'unseen' => (string) $unseen_count,
+            'progress' => $progress,
+            'dates_count' =>(int) $milestone
         );
         //var_dump($project);
     endforeach;
