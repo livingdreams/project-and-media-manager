@@ -61,7 +61,7 @@
                         <tr>
                             <td align="center" class="logo" style="border-bottom:4px solid #333333;padding:7px 0">
                                 <a title="GlobalDisasterRestoration" href="<?php echo get_home_url(); ?>" style="color:#337ff1">
-                                    <img src="http://www.globalenterprisesouthflorida.com/wp-content/uploads/2016/07/globalEnterprisesOfSouthFlorida.png" style="max-width:200px;" alt="globalEnterprisesDisasterRestoration" />
+                                    <img src="http://www.gedrusa.com/wp-content/uploads/2016/07/globalEnterprisesOfSouthFlorida.png" style="max-width:200px;" alt="globalEnterprisesDisasterRestoration" />
                                 </a>
                             </td>
                         </tr>

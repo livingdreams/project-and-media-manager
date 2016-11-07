@@ -258,8 +258,8 @@ function send_email($to, $subject, $message) {
     //filter email content type
     add_filter('wp_mail_content_type', 'set_html_content_type');
 
-    $headers = 'From: Global Enterprise South Florida <webmaster@globalenterprisesouthflorida.com>' . "\r\n" .
-            'Reply-To: noreply@globalenterprisesouthflorida.com' . "\r\n" .
+    $headers = 'From: Global Enterprise South Florida <webmaster@gedrusa.com>' . "\r\n" .
+            'Reply-To: noreply@gedrusa.com' . "\r\n" .
             'X-Mailer: PHP/' . phpversion();
 
     if (wp_mail($to, $subject, $message, $headers)) {

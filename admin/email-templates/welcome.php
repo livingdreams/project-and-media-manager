@@ -65,7 +65,7 @@
                         <tr>
                             <td align="center" class="logo" style="border-bottom:4px solid #333333;padding:7px 0">
                                 <a title="GlobalDisasterRestoration" href="<?php echo get_home_url(); ?>" style="color:#337ff1">
-                                    <img src="http://www.globalenterprisesouthflorida.com/wp-content/uploads/2016/07/globalEnterprisesOfSouthFlorida.png" style="max-width:200px;" alt="globalEnterprisesDisasterRestoration" />
+                                    <img src="http://www.gedrusa.com/wp-content/uploads/2016/07/globalEnterprisesOfSouthFlorida.png" style="max-width:200px;" alt="globalEnterprisesDisasterRestoration" />
                                 </a>
                             </td>
                         </tr>
@@ -97,7 +97,7 @@
                                                 <span style="color:#333"><strong>Password: </strong></span> <?php echo $client->password; ?> <br />
                                             </span>
                                             <p data-html-only="1" style="border-bottom:1px solid #D6D4D4;margin:3px 0 7px;padding-bottom:10px">
-                                                <span style="color:#333"><strong>Portal Access: </strong></span><br><a href="http://www.globalenterprisesouthflorida.com/client-dashboard/" target="_blank" style="color: #2a71b9; text-decoration: none">
+                                                <span style="color:#333"><strong>Portal Access: </strong></span><br><a href="http://www.gedrusa.com/client-dashboard/" target="_blank" style="color: #2a71b9; text-decoration: none">
                                                     Click here</a> to review your project from your desktop computer or visit <a href="www.myproject.us" target="_blank" style="color: #2a71b9; text-decoration: none">www.myproject.us</a> You can also download our free Disaster Restoration Mobile App to review your project from your <a href="https://itunes.apple.com/us/app/disaster-restoration/id649725393?mt=8" target="_blank" style="color: #2a71b9; text-decoration: none">IPhone</a> or <a href="#" target="_blank" style="color: #2a71b9; text-decoration: none">Android </a>device.
                                             </p>
 
@@ -140,7 +140,7 @@
                         <tr>
                             <td align="center" class="titleblock" style="padding:7px 0">
                                 <font size="2" face="Open-sans, sans-serif" color="#555454">
-                                <span class="subtitle" style="font-weight:500;font-size:16px;text-transform:uppercase;line-height:25px">Also, please fill out our RED ALERT PROGRAM FOR <a href="<?php echo $commercial_link ?>" style="color: #2a71b9; text-decoration: none">  COMMERCIAL </a>OR <a href="http://www.globalenterprisesouthflorida.com/red-alert-program/" target="_blank "style="color: #2a71b9; text-decoration: none">RESIDENTIAL</a> PROPERTIES</span>
+                                <span class="subtitle" style="font-weight:500;font-size:16px;text-transform:uppercase;line-height:25px">Also, please fill out our RED ALERT PROGRAM FOR <a href="<?php echo $commercial_link ?>" style="color: #2a71b9; text-decoration: none">  COMMERCIAL </a>OR <a href="http://www.gedrusa.com/red-alert-program/" target="_blank "style="color: #2a71b9; text-decoration: none">RESIDENTIAL</a> PROPERTIES</span>
                                 </font>
                             </td>
                         </tr>
