@@ -98,7 +98,7 @@
                                             </span>
                                             <p data-html-only="1" style="border-bottom:1px solid #D6D4D4;margin:3px 0 7px;padding-bottom:10px">
                                                 <span style="color:#333"><strong>Portal Access: </strong></span><br><a href="<?php echo wp_login_url() ?>" target="_blank" style="color: #2a71b9; text-decoration: none">
-                                                    Click here</a> to add and edit your projects. Remember to download our free Disaster Restoration Mobile App   to review your projects from your <a href="https://itunes.apple.com/us/app/disaster-restoration/id649725393?mt=8" target="_blank" style="color: #2a71b9; text-decoration: none">IPhone</a> or <a href="#" target="_blank" style="color: #2a71b9; text-decoration: none">Android </a>device.
+                                                    Click here</a> to add and edit your projects. Remember to download our free Disaster Restoration Mobile App   to review your projects from your <a href="https://itunes.apple.com/us/app/disaster-restoration/id649725393?mt=8" target="_blank" style="color: #2a71b9; text-decoration: none">IPhone</a> or <a href="https://play.google.com/store/apps/details?id=com.gedr.disasterrestoration" target="_blank" style="color: #2a71b9; text-decoration: none">Android </a>device.
                                             </p>
 
                                             </font>
