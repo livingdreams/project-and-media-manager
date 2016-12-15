@@ -125,7 +125,7 @@
                                                 <li><span style="color:#333"><strong>More Details: </strong></span>You’ll find more details, including dated notes and additional information about your project.</li>							
                                                 <li><span style="color:#333"><strong>Gallery : </strong></span>Easily browse high quality photos from the job site an attractive pop-up photo gallery</li>							
                                                 <li><span style="color:#333"><strong>Videos  : </strong></span>Easily browse videos related to each milestone.</li>			
-                                                <li><span style="color:#333"><strong>Share: </strong></span>Share pictures, videos, and documents directly from out app to social media, friends and family</li>
+                                                <li><span style="color:#333"><strong>Share: </strong></span>Share pictures, videos, and documents directly from our app to social media, friends and family</li>
                                             </ul>
                                             </font>
                                         </td>

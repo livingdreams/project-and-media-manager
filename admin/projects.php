@@ -224,6 +224,8 @@ if (!class_exists('WP_ClientProject')) {
             $table_unseen = $wpdb->prefix . 'user_unseen';
 
             //$devices = $wpdb->get_results("SELECT devicetoken AS UL FROM $table WHERE clientid = " . $data['_client_id'] . "");
+            //var_dump("SELECT distinct devicetoken AS UL, unseen AS US, devicemodel AS DM FROM $table, $table_unseen WHERE clientid = user_id AND post_id = " . $data['post_id'] . "");
+//die();
             $devices = $wpdb->get_results("SELECT distinct devicetoken AS UL, unseen AS US, devicemodel AS DM FROM $table, $table_unseen WHERE clientid = user_id AND post_id = " . $data['post_id'] . "");
 
             foreach ($devices as $key => $device) {
@@ -237,10 +239,17 @@ if (!class_exists('WP_ClientProject')) {
                     );
                     $this->_payload = json_encode($payload);
 
-
                     //$apns_message = 'Test';
                     $apns_message = chr(0) . chr(0) . chr(32) . pack('H*', str_replace(' ', '', $device->UL)) . chr(0) . chr(strlen($this->_payload)) . $this->_payload;
-                    fwrite($apns, $apns_message);
+                    //$apns_message = chr(0) . pack('n', 32) . pack('H*', $device->UL) . pack('n', strlen($this->_payload)) . $this->_payload;
+                     
+                     try{
+                          fwrite($apns, $apns_message, strlen($apns_message));
+                     }catch(Exception $ex){
+                          echo $ex->getMessage().'/n';   
+                     }                     
+
+
                 } else {
                     
                     $message = array(
